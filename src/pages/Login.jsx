@@ -15,18 +15,16 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState(false);
   const navigate = useNavigate();
-
-
   const handleLogin = (e) => {
     e.preventDefault();
-
+  
     // Simulate email check
     if (email !== 'demo@example.com') {
       setEmailError(true);
-    }else {
-        setEmailError(false);
-        navigate('/'); // ✅ redirect after login
-      }
+    } else {
+      setEmailError(false);
+      navigate('/'); // ✅ Redirect to main page
+    }
   };
 
   return (
