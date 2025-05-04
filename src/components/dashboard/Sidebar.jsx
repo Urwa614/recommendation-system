@@ -1,14 +1,23 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaUser, FaSignOutAlt, FaLightbulb } from 'react-icons/fa';
 import { MdDashboardCustomize } from 'react-icons/md';
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navItemClass = (path) =>
     `flex items-center gap-2 p-3 rounded-md hover:bg-blue-100 ${
       location.pathname === path ? 'bg-blue-100 font-semibold' : ''
     }`;
+
+  const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem('userData');
+
+    // Redirect to the login page
+    navigate('/');
+  };
 
   return (
     <div className="bg-white w-64 min-h-screen shadow-md p-4">
@@ -28,7 +37,10 @@ const Sidebar = () => {
         <Link to="/manage/career-suggestion" className={navItemClass('/manage/career-suggestion')}>
           <FaLightbulb /> AI Career Suggestion
         </Link>
-        <button className="mt-auto flex items-center gap-2 text-red-500 hover:text-red-700 p-3">
+        <button
+          onClick={handleLogout}
+          className="mt-auto flex items-center gap-2 text-red-500 hover:text-red-700 p-3"
+        >
           <FaSignOutAlt /> Logout
         </button>
       </nav>

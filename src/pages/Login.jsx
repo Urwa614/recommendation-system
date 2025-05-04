@@ -1,7 +1,5 @@
-// components/LoginForm.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import {
   FaEnvelope,
   FaKey,
@@ -15,15 +13,22 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState(false);
   const navigate = useNavigate();
+
   const handleLogin = (e) => {
     e.preventDefault();
-  
-    // Simulate email check
-    if (email !== 'demo@example.com') {
-      setEmailError(true);
-    } else {
+
+    const savedUserData = JSON.parse(localStorage.getItem('userData'));
+    console.log('Saved User Data:', savedUserData);
+    console.log('Entered Email:', email);
+    console.log('Entered Password:', password);
+
+    if (savedUserData && savedUserData.email.toLowerCase() === email.toLowerCase() && savedUserData.password === password) {
       setEmailError(false);
-      navigate('/'); // ✅ Redirect to main page
+      console.log('Login successful');
+      navigate('/manage');
+    } else {
+      setEmailError(true);
+      console.error('Invalid email or password');
     }
   };
 
@@ -37,7 +42,10 @@ const LoginForm = () => {
             Login
           </div>
         </button>
-        <button className="w-1/2 py-2 font-semibold bg-blue-100 text-blue-600 rounded-tr-lg">
+        <button
+          className="w-1/2 py-2 font-semibold bg-blue-100 text-blue-600 rounded-tr-lg"
+          onClick={() => navigate('/register')} // Redirect to the register page
+        >
           <div className="flex items-center justify-center gap-2">
             <FaUserPlus />
             Register
@@ -66,14 +74,14 @@ const LoginForm = () => {
                 setEmail(e.target.value);
                 setEmailError(false);
               }}
-              placeholder="skill@gmail.com"
+              placeholder="Email"
               className="w-full outline-none bg-transparent"
             />
             {emailError && <FaExclamationCircle className="text-red-500" />}
           </div>
           {emailError && (
             <p className="text-red-500 text-sm mt-1 ml-2">
-              ❗ Email account does not exist
+              ❗ Invalid email or password
             </p>
           )}
         </div>
@@ -107,7 +115,10 @@ const LoginForm = () => {
             Sign Up
           </span>
         </p>
-        <button className="border border-blue-500 px-4 py-1 rounded text-blue-500 hover:bg-blue-100 transition">
+        <button
+          onClick={() => navigate('/')} // Redirect to the home page
+          className="border border-blue-500 px-4 py-1 rounded text-blue-500 hover:bg-blue-100 transition"
+        >
           CLOSE
         </button>
       </div>
