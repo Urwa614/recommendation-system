@@ -25,7 +25,6 @@ const AuthForm = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
   const handleRegisterSubmit = (e) => {
     e.preventDefault();
   
@@ -34,11 +33,9 @@ const AuthForm = () => {
   
     console.log('Form Data saved to local storage:', formData);
   
-    // Simulate a real form submission to trigger the password manager
-    const form = e.target;
-    form.submit(); // This will trigger the browser's password manager
+    // Redirect to the dashboard page
+    navigate('/dashboard');
   };
-
   return (
     <div className="w-full max-w-md mx-auto mt-10 border shadow-lg rounded-lg p-6 bg-white">
       {/* Tabs */}

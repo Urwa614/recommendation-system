@@ -1,16 +1,31 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handleDashboardClick = () => {
+    if (isAuthenticated) {
+      navigate('/manage');
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
-    <header className="bg-blue-700 text-white py-4 shadow-md">
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">AI Career Counselor</h1>
+    <header className="bg-blue-600 text-white px-6 py-4 shadow">
+      <div className="container mx-auto flex justify-between items-center">
+        <Link to="/" className="text-xl font-bold">Career Recommender</Link>
         <nav className="space-x-4">
           <Link to="/" className="hover:underline">Home</Link>
-          <Link to="/login" className="hover:underline">Login</Link>
-          <Link to="/register" className="hover:underline">Register</Link>
-          <Link to="/dashboard" className="hover:underline">Dashboard</Link>
+          <button
+            onClick={handleDashboardClick}
+            className="hover:underline focus:outline-none"
+          >
+            Dashboard
+          </button>
         </nav>
       </div>
     </header>
