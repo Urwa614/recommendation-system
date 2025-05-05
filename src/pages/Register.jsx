@@ -48,14 +48,21 @@ const RegisterForm = () => {
         setError('');
         
         try {
-            // Call the backend API to register the user
-            const response = await registerUser(formData.username, formData.password);
+            // Call the backend API to register the user with all form data
+            const response = await registerUser(
+                formData.username, 
+                formData.password, 
+                formData.fullName, 
+                formData.phone, 
+                formData.city
+            );
             console.log('Registration successful:', response);
             
             // Store user info in localStorage including id from response
             localStorage.setItem('user', JSON.stringify({
                 id: response.id,
-                username: response.username || formData.username
+                username: response.username,
+                fullName: response.fullName
             }));
             
             // Show success message briefly before redirecting
