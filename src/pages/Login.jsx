@@ -7,28 +7,36 @@ import {
   FaUserPlus,
   FaExclamationCircle
 } from 'react-icons/fa';
+import { loginUser } from '../api/authApi';
 
 const LoginForm = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState(false);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('Invalid username or password');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-
-    const savedUserData = JSON.parse(localStorage.getItem('userData'));
-    console.log('Saved User Data:', savedUserData);
-    console.log('Entered Email:', email);
-    console.log('Entered Password:', password);
-
-    if (savedUserData && savedUserData.email.toLowerCase() === email.toLowerCase() && savedUserData.password === password) {
-      setEmailError(false);
-      console.log('Login successful');
+    setLoading(true);
+    setError(false);
+    
+    try {
+      const response = await loginUser(username, password);
+      console.log('Login response:', response);
+      
+      // Store user info in localStorage for frontend persistence
+      localStorage.setItem('user', JSON.stringify({ username }));
+      
+      // Redirect to dashboard
       navigate('/manage');
-    } else {
-      setEmailError(true);
-      console.error('Invalid email or password');
+    } catch (err) {
+      setError(true);
+      setErrorMessage(err.message || 'Invalid username or password');
+      console.error('Login error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,29 +67,29 @@ const LoginForm = () => {
         <div>
           <div
             className={`flex items-center border px-3 py-2 rounded ${
-              emailError ? 'border-red-500 bg-red-50' : 'border-gray-300'
+              error ? 'border-red-500 bg-red-50' : 'border-gray-300'
             }`}
           >
             <FaEnvelope
               className={`mr-3 text-lg ${
-                emailError ? 'text-red-500' : 'text-blue-500'
+                error ? 'text-red-500' : 'text-blue-500'
               }`}
             />
             <input
-              type="email"
-              value={email}
+              type="text"
+              value={username}
               onChange={(e) => {
-                setEmail(e.target.value);
-                setEmailError(false);
+                setUsername(e.target.value);
+                setError(false);
               }}
-              placeholder="Email"
+              placeholder="Username"
               className="w-full outline-none bg-transparent"
             />
-            {emailError && <FaExclamationCircle className="text-red-500" />}
+            {error && <FaExclamationCircle className="text-red-500" />}
           </div>
-          {emailError && (
+          {error && (
             <p className="text-red-500 text-sm mt-1 ml-2">
-              ❗ Invalid email or password
+              ❗ {errorMessage}
             </p>
           )}
         </div>
@@ -101,9 +109,10 @@ const LoginForm = () => {
         {/* Login Button */}
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded font-semibold hover:bg-blue-600"
+          disabled={loading}
+          className={`w-full ${loading ? 'bg-blue-400' : 'bg-blue-500 hover:bg-blue-600'} text-white py-2 rounded font-semibold`}
         >
-          LOG IN
+          {loading ? 'LOGGING IN...' : 'LOG IN'}
         </button>
       </form>
 

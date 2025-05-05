@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import {
     FaUser,
     FaEnvelope,
@@ -8,127 +8,100 @@ import {
     FaMapMarkerAlt,
     FaKey
 } from 'react-icons/fa';
+import { registerUser } from '../api/authApi';
 
-const AuthForm = () => {
-    const [activeTab, setActiveTab] = useState('login');
+const RegisterForm = () => {
     const [formData, setFormData] = useState({
         fullName: '',
-        email: '',
+        username: '',
         password: '',
         confirmPassword: '',
         phone: '',
         city: ''
     });
-    const navigate = useNavigate(); // Initialize navigate
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+    const navigate = useNavigate();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+        setError(''); // Clear errors when user types
     };
-    const handleRegisterSubmit = (e) => {
+    
+    const handleRegisterSubmit = async (e) => {
         e.preventDefault();
-
-        // Save form data to local storage
-        localStorage.setItem('userData', JSON.stringify(formData));
-
-        console.log('Form Data saved to local storage:', formData);
-
-        // Redirect to the dashboard page
-        navigate('/manage'); // Use navigate to redirect
+        
+        // Basic validation
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+        
+        if (!formData.username || !formData.password) {
+            setError('Username and password are required');
+            return;
+        }
+        
+        setLoading(true);
+        setError('');
+        
+        try {
+            // Call the backend API to register the user
+            const response = await registerUser(formData.username, formData.password);
+            console.log('Registration successful:', response);
+            
+            // Store user info in localStorage including id from response
+            localStorage.setItem('user', JSON.stringify({
+                id: response.id,
+                username: response.username || formData.username
+            }));
+            
+            // Show success message briefly before redirecting
+            setSuccess(true);
+            setTimeout(() => {
+                // Redirect to dashboard after showing success message
+                navigate('/manage');
+            }, 1500);
+        } catch (err) {
+            setError(err.message || 'Registration failed. Please try again.');
+            console.error('Registration error:', err);
+        } finally {
+            setLoading(false);
+        }
     };
+
     return (
         <div className="w-full max-w-md mx-auto mt-10 border shadow-lg rounded-lg p-6 bg-white">
-            {/* Tabs */}
-            <div className="flex">
-                <button
-                    className={`w-1/2 py-2 font-semibold ${activeTab === 'login' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-600'}`}
-                    onClick={() => setActiveTab('login')}
-                >
+            {/* Header */}
+            <div className="flex mb-6">
+                <div className="w-full py-2 font-semibold bg-blue-500 text-white rounded-t-lg text-center">
                     <div className="flex items-center justify-center gap-2">
                         <FaUser />
-                        Login
+                        <h1 className="text-xl">Create New Account</h1>
                     </div>
-                </button>
-                <button
-                    className={`w-1/2 py-2 font-semibold ${activeTab === 'register' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-600'}`}
-                    onClick={() => setActiveTab('register')}
-                >
-                    <div className="flex items-center justify-center gap-2">
-                        <FaUser />
-                        Register
-                    </div>
-                </button>
+                </div>
             </div>
+            
+            {/* Success Message */}
+            {success && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 mb-4 rounded relative" role="alert">
+                    <strong className="font-bold">Success! </strong>
+                    <span className="block sm:inline">Your account has been created. Redirecting...</span>
+                </div>
+            )}
 
-            {/* Login Form */}
-            {activeTab === 'login' && (
-                <form
-                    className="mt-6 space-y-4"
-                    onSubmit={handleRegisterSubmit}
-                    action="/" // Simulate a real form submission
-                >
-                    {/* Full Name */}
-                    <div className="flex items-center border px-3 py-2 rounded">
-                        <FaUser className="text-blue-500 mr-3" />
-                        <input
-                            type="text"
-                            name="fullName"
-                            value={formData.fullName}
-                            onChange={handleInputChange}
-                            placeholder="Full Name *"
-                            className="w-full outline-none"
-                        />
-                    </div>
-
-                    {/* Email */}
-                    <div className="flex items-center border px-3 py-2 rounded">
-                        <FaEnvelope className="text-blue-500 mr-3" />
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            placeholder="Email *"
-                            className="w-full outline-none"
-                        />
-                    </div>
-
-                    {/* Password */}
-                    <div className="flex items-center border px-3 py-2 rounded">
-                        <FaLock className="text-blue-500 mr-3" />
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleInputChange}
-                            placeholder="Password *"
-                            className="w-full outline-none"
-                        />
-                    </div>
-
-                    {/* Confirm Password */}
-                    <div className="flex items-center border px-3 py-2 rounded">
-                        <FaLock className="text-blue-500 mr-3" />
-                        <input
-                            type="password"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleInputChange}
-                            placeholder="Confirm Password *"
-                            className="w-full outline-none"
-                        />
-                    </div>
-
-                    {/* Submit Button */}
-                    <button className="w-full bg-blue-500 text-white py-2 rounded font-semibold hover:bg-blue-600">
-                        SUBMIT & START TEST
-                    </button>
-                </form>
+            {/* Error Message */}
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 mb-4 rounded relative" role="alert">
+                    <strong className="font-bold">Error! </strong>
+                    <span className="block sm:inline">{error}</span>
+                </div>
             )}
 
             {/* Register Form */}
-            {activeTab === 'register' && (
-                <form className="mt-6 space-y-4" onSubmit={handleRegisterSubmit}>
+            <form className="mt-6 space-y-4" onSubmit={handleRegisterSubmit}>
                     {/* Full Name */}
                     <div className="flex items-center border px-3 py-2 rounded">
                         <FaUser className="text-blue-500 mr-3" />
@@ -142,15 +115,15 @@ const AuthForm = () => {
                         />
                     </div>
 
-                    {/* Email */}
+                    {/* Username */}
                     <div className="flex items-center border px-3 py-2 rounded">
                         <FaEnvelope className="text-blue-500 mr-3" />
                         <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
+                            type="text"
+                            name="username"
+                            value={formData.username}
                             onChange={handleInputChange}
-                            placeholder="Email *"
+                            placeholder="Username *"
                             className="w-full outline-none"
                         />
                     </div>
@@ -208,35 +181,26 @@ const AuthForm = () => {
                     </div>
 
                     {/* Submit Button */}
-                    <button className="w-full bg-blue-500 text-white py-2 rounded font-semibold hover:bg-blue-600">
-                        SUBMIT & START TEST
+                    <button 
+                        type="submit"
+                        disabled={loading || success}
+                        className={`w-full ${loading || success ? 'bg-blue-400' : 'bg-blue-500 hover:bg-blue-600'} text-white py-2 rounded font-semibold`}
+                    >
+                        {loading ? 'Creating Account...' : success ? 'Account Created!' : 'Create Account'}
                     </button>
                 </form>
-            )}
 
             {/* Footer */}
             <div className="mt-6 flex justify-between items-center text-sm">
-                {activeTab === 'login' ? (
-                    <p>
-                        Not a member?{' '}
-                        <span
-                            onClick={() => setActiveTab('register')}
-                            className="text-blue-600 cursor-pointer font-medium"
-                        >
-                            Sign Up
-                        </span>
-                    </p>
-                ) : (
-                    <p>
-                        Already have an account?{' '}
-                        <span
-                            onClick={() => setActiveTab('login')}
-                            className="text-blue-600 cursor-pointer font-medium"
-                        >
-                            Log In
-                        </span>
-                    </p>
-                )}
+                <p>
+                    Already have an account?{' '}
+                    <span
+                        onClick={() => navigate('/login')}
+                        className="text-blue-600 cursor-pointer font-medium"
+                    >
+                        Log In
+                    </span>
+                </p>
 
                 <button
                     onClick={() => navigate('/')} // Redirect to the home page
@@ -249,4 +213,4 @@ const AuthForm = () => {
     );
 };
 
-export default AuthForm;
+export default RegisterForm;
